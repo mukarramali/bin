@@ -108,7 +108,6 @@ const TemplateWrapper = ({ children }) => (
               <div style={{ flex: 2.5, paddingRight: "30px" }}>
                 {children()}
               </div>
-
               <div style={{ flex: 1 }}>
                 <Link to={ProfileLink}>
                   <Sidebar
