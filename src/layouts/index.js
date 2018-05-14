@@ -55,6 +55,8 @@ const Sidebar = props => (
   </div>
 );
 
+const ProfileLink = "static/profile/index.html";
+
 const TemplateWrapper = ({ children }) => (
   <div>
     <Helmet
@@ -108,10 +110,12 @@ const TemplateWrapper = ({ children }) => (
               </div>
 
               <div style={{ flex: 1 }}>
-                <Sidebar
-                  title="Profile"
-                  description="Projects worked on and experiences. If that matters. Just in case."
-                />
+                <Link to={ProfileLink}>
+                  <Sidebar
+                    title="Profile"
+                    description="Projects worked on and experiences. If that matters. Just in case."
+                    />
+                </Link>
                 <Sidebar
                   title="About author"
                   description="Mukarram is a Full-stack Developer who loves to explore random tech shits. Loving RoRoR. Never heard? React on Ruby on Rails. Made few projects on Android as well. Based in Bengaluru."
