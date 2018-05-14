@@ -55,7 +55,7 @@ const Sidebar = props => (
   </div>
 );
 
-const ProfileLink = "static/profile/index.html";
+const ProfileLink = "https://github.com/mukarramali.github.io";
 
 const TemplateWrapper = ({ children }) => (
   <div>
