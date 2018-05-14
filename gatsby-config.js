@@ -14,5 +14,5 @@ module.exports = {
     },
     'gatsby-transformer-remark'
   ],
-  pathPrefix: `/mukarramali.github.io`,
+  pathPrefix: `/bin`,
 }
