@@ -55,7 +55,7 @@ const Sidebar = props => (
   </div>
 );
 
-const ProfileLink = "https://github.com/mukarramali.github.io";
+const ProfileLink = "https://mukarramali.github.io";
 
 const TemplateWrapper = ({ children }) => (
   <div>
@@ -109,12 +109,12 @@ const TemplateWrapper = ({ children }) => (
                 {children()}
               </div>
               <div style={{ flex: 1 }}>
-                <Link to={ProfileLink}>
+                <a href={ProfileLink}>
                   <Sidebar
                     title="Profile"
                     description="Projects worked on and experiences. If that matters. Just in case."
                     />
-                </Link>
+                </a>
                 <Sidebar
                   title="About author"
                   description="Mukarram is a Full-stack Developer who loves to explore random tech shits. Loving RoRoR. Never heard? React on Ruby on Rails. Made few projects on Android as well. Based in Bengaluru."
