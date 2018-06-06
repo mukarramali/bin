@@ -1,12 +1,99 @@
 ---
 path: "/android-deployment"
 date: "2018-06-06T00:08:33.962Z"
-title: "Android Versioning Using Docker Like A Pro"
+title: "Android Versioning Using Docker & Git Like A Pro"
 ---
 
 Believe it or not, unlike web deployments, android deployment sucks. Specially when you don't want to use Play Store.
 
-So, we gonna use docker, git, and some simple hacks to put things in work
+So, we gonna use docker, git, and some simple hacks to put things in work.
+
+
+
+
+### Signing Our Application
+
+It's better to start thinking about security right from the big bang.
+From android studio, you can generate a new keystore, a jks file. [Help?](https://developer.android.com/studio/publish/app-signing)
+Copy the keystore file details in a *config.yaml* file like below:
+
+```yaml
+key_store:
+  key: /xyz/xyz.jks
+  alias: key0
+  store_password: wuhoo
+  key_password: nibataunga
+```
+Studio will take care of signing, but to generate signed apk from command line, you'll need to make some changes in your build.gradle.
+
+```groovy
+android {
+    ...
+    signingConfigs {
+        release {
+            if (project.hasProperty('APP_RELEASE_STORE_FILE')) {
+                storeFile file("$APP_RELEASE_STORE_FILE")
+                storePassword "$APP_RELEASE_STORE_PASSWORD"
+                keyAlias "$APP_RELEASE_KEY_ALIAS"
+                keyPassword "$APP_RELEASE_KEY_PASSWORD"
+            }
+        }
+    }
+    buildTypes {
+        release {
+          ...
+          if (project.hasProperty('APP_RELEASE_STORE_FILE')) {
+              signingConfig signingConfigs.release
+          }
+        }
+    }
+}
+```
+
+
+
+
+### Release Versioning, Digging Git 
+
+Let's follow the old school way.
+
+Major.Minor.*GitRevision*.Patch
+
+I won't go down the road to explain first two and the last one. Let's dig into GitRevision
+
+GitRevision will make versioning easy and consistent. It counts the number of commits from git, so you'll get incremental values everytime you release a new version.
+
+We'll put the below code in build.gradle[app]
+```groovy
+def getGitRevision = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            standardOutput = stdout
+            commandLine 'git', 'rev-list', '--first-parent', '--count', 'master'
+        }
+        logger.info("Building revision #"+stdout)
+        return stdout.toString("ASCII").trim().toInteger()
+    }
+    catch (Exception e) {
+        e.printStackTrace();
+        return 0;
+    }
+}
+```
+
+And in build.gradle[app]
+
+```groovy
+    defaultConfig {
+        ...
+        versionCode = 10000000*majorVersion+10000*minorVersion + 10*revision
+        versionName = 'v' + majorVersion + '.' + minorVersion + '.' + revision + patch
+    }
+```
+
+
+
 
 ### Docker Image, Savage
 
@@ -15,8 +102,7 @@ We first need to build a docker image with minimum libraries and dependencies re
 ```console
 FROM openjdk:8
 RUN apt-get update
-ENV PWD /opt/
-RUN cd ${PWD}
+RUN cd /opt/
 RUN wget -nc https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
 ENV ANDROID_HOME /opt/android-sdk-linux
 RUN mkdir -p ${ANDROID_HOME}
@@ -76,58 +162,23 @@ Here we first check if the container already exists. And then create accordingly
 While creating the container, we *mount* our current project directory. So next time we run this container, our updated project will already be there in the container.
 
 
-##### Running container
 
-In the last line of the script we run the container, with our compile script. Passing the config(Application configurations) file. We'll get to know about this compiling stage below.
+### Running container
 
+We run the container, with our compile script. Passing the signing config file we created earlier.
 
+```ruby
+config = YAML.load_file(key_config_file)
 
+key_store = config['key_store']
+output_file = 'app/build/outputs/apk/release/app-release.apk'
+`rm #{output_file}` if File.exists?output_file
 
-### Signing Our Application
-
-It's better to start thinking about security right from the big bang.
-From android studio, you can generate a new keystore, a jks file. [Help?](https://developer.android.com/studio/publish/app-signing)
-Copy the keystore file details in a *config.yaml* file like below:
-
-```yaml
-key_store:
-  key: /xyz/xyz.jks
-  alias: key0
-  store_password: wuhoo
-  key_password: nibataunga
-```
-Studio will take care of signing, but to generate signed apk from command line, you'll need to make some changes in your build.gradle. See my sample project for help.
-
-
-
-
-### Release Versioning, Digging Git 
-
-Let's follow the old school way.
-
-Major.Minor.*GitRevision*.Patch
-
-I won't go down the road to explain first two and the last one. Let's dig into GitRevision
-
-GitRevision will make versioning easy and consistent. It counts the number of commits from git, so you'll get incremental values everytime you release a new version.
-
-We'll put the below code in build.gradle[app]
-```groovy
-def getGitRevision = { ->
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            standardOutput = stdout
-            commandLine 'git', 'rev-list', '--first-parent', '--count', 'master'
-        }
-        logger.info("Building revision #"+stdout)
-        return stdout.toString("ASCII").trim().toInteger()
-    }
-    catch (Exception e) {
-        e.printStackTrace();
-        return 0;
-    }
-}
+puts `#{File.dirname(__FILE__)}/../gradlew assembleRelease --stacktrace \
+    -PAPP_RELEASE_STORE_FILE=#{key_store['key']} \
+    -PAPP_RELEASE_KEY_ALIAS=#{key_store['alias']} \
+    -PAPP_RELEASE_STORE_PASSWORD='#{key_store['store_password']}' \
+    -PAPP_RELEASE_KEY_PASSWORD='#{key_store['key_password']}'`
 ```
 
 
@@ -169,3 +220,4 @@ end
 
 
 ### [Demo Application](https://github.com/mukarramali/bin)
+Releasing soon.
