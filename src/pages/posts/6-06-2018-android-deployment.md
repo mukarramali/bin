@@ -1,14 +1,14 @@
 ---
 path: "/android-deployment"
 date: "2018-06-06T00:08:33.962Z"
-title: "Deploying Android Without Play Store Like A Pro"
+title: "Android Versioning Using Docker Like A Pro"
 ---
 
 Believe it or not, unlike web deployments, android deployment sucks. Specially when you don't want to use Play Store.
 
 So, we gonna use docker, git, and some simple hacks to put things in work
 
-### Docker image
+### Docker Image, Savage
 
 We first need to build a docker image with minimum libraries and dependencies required.
 
@@ -31,6 +31,7 @@ RUN yes | sdkmanager \
 RUN apt-get -y install ruby
 RUN gem install trollop
 ```
+Trollop will be helpful in compile scripts, spicing the boring command line args.
 
 We are using openjdk as base image for java environment.
 We have installed our sdk with version 27. You can change that accordingly.
@@ -82,11 +83,11 @@ In the last line of the script we run the container, with our compile script. Pa
 
 
 
-### Signing our application
+### Signing Our Application
 
 It's better to start thinking about security right from the big bang.
 From android studio, you can generate a new keystore, a jks file. [Help?](https://developer.android.com/studio/publish/app-signing)
-Copy the keystore file details in a config.yaml file like below:
+Copy the keystore file details in a *config.yaml* file like below:
 
 ```yaml
 key_store:
@@ -95,11 +96,76 @@ key_store:
   store_password: wuhoo
   key_password: nibataunga
 ```
+Studio will take care of signing, but to generate signed apk from command line, you'll need to make some changes in your build.gradle. See my sample project for help.
 
 
 
 
+### Release Versioning, Digging Git 
 
-4. Pass the signing keystore file path, alias, and password.
+Let's follow the old school way.
 
-5. s3config file can be passed to push to the bucket from your own machine, without any container.
+Major.Minor.*GitRevision*.Patch
+
+I won't go down the road to explain first two and the last one. Let's dig into GitRevision
+
+GitRevision will make versioning easy and consistent. It counts the number of commits from git, so you'll get incremental values everytime you release a new version.
+
+We'll put the below code in build.gradle[app]
+```groovy
+def getGitRevision = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            standardOutput = stdout
+            commandLine 'git', 'rev-list', '--first-parent', '--count', 'master'
+        }
+        logger.info("Building revision #"+stdout)
+        return stdout.toString("ASCII").trim().toInteger()
+    }
+    catch (Exception e) {
+        e.printStackTrace();
+        return 0;
+    }
+}
+```
+
+
+
+### Pushing to S3
+
+So, now we have build a signed apk from a docker container. It's time to push them.
+Connect with your s3 bucket and generate *$HOME/.s3cfg* file, and pass it to ruby script below:
+
+```ruby
+if File.file?(s3_config)
+  # Push the generate apk file with the app and version name
+  `s3cmd put app/build/outputs/apk/release/app-release.apk s3://#{bucket}/#{app_name}-#{version_name}.apk -m application/vnd.android.package-archive -f -P -c #{s3_config}`
+  # application/vnd.android.package-archive is an apk file format descriptor
+
+  # Replace the previous production file
+  `s3cmd put app/build/outputs/apk/release/app-release.apk s3://#{bucket}/#{app_name}.apk -m application/vnd.android.package-archive -f -P -c #{s3_config}`
+
+  # To keep the track of latest release
+  `echo #{version_code}> latest_version.txt`
+  `s3cmd put latest_version.txt s3://#{bucket}/latest_version.txt -f -P -c #{s3_config}`
+  `rm latest_version.txt`
+  puts "Successfully released new app version."
+end
+```
+
+
+
+### Finally, Git Tagging The New Release Version, *#hashtag*
+
+```ruby
+def push_new_tag version_name
+  `git tag #{version_name}`
+  `git push origin #{version_name}`
+  puts "New tag pushed to repo."
+end
+```
+
+
+
+### [Demo Application](https://github.com/mukarramali/bin)
