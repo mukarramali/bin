@@ -4,10 +4,22 @@ date: "2018-06-06T00:08:33.962Z"
 title: "Android Versioning Using Docker & Git Like A Pro"
 ---
 
-Believe it or not, unlike web deployments, android deployment sucks. Specially when you don't want to use Play Store.
+Unlike web deployments, android deployment still lacks the ease of version deployments. Specially when you don't want to use Play Store.
 
-So, we gonna use docker, git, and some simple hacks to put things in work.
+![alt text](https://www.genymobile.com/wp-content/uploads/2015/07/Android-Docker.png "Shipping Android Deployment")
 
+
+
+### Introduction
+
+There will be five stages:
+1. Signing application
+2. Versioning of application. For that we gonna use git revision and Major.Minor.Patch naming convention.
+3. Building application using a docker. So that running environment doesn't change.
+4. Pushing new release to s3, while maintaining the previous versions.
+5. Pushing new tag to git, with the new version. So, we'll have tags for each version.
+
+Basically, we gonna use docker, git, and some simple hacks to put things in work. In the end, I've shared a sample application.
 
 
 
@@ -219,5 +231,5 @@ end
 
 
 
-### [Demo Application](https://github.com/mukarramali/bin)
+### [Demo Application](https://github.com/mukarramali/android_deployment_example)
 Releasing soon.
