@@ -23,7 +23,7 @@ Basically, we gonna use docker, git, and some simple hacks to put things in work
 
 
 
-### Stage 1: Signing Our Application
+### *Stage 1*: Signing Our Application
 
 It's better to start thinking about security right from the big bang.
 From android studio, you can generate a new keystore, a jks file. [Help?](https://developer.android.com/studio/publish/app-signing)
@@ -65,7 +65,7 @@ android {
 
 
 
-### Stage 2: Release Versioning, Digging Git 
+### *Stage 2*: Release Versioning, Digging Git 
 
 Let's follow the old school way.
 
@@ -175,7 +175,7 @@ While creating the container, we *mount* our current project directory. So next 
 
 
 
-### Stage 3: Running container, *Build Stage*
+### *Stage 3*: Running container, *Build Stage*
 
 We run the container, with our compile script. Passing the signing config file we created earlier.
 
@@ -195,7 +195,7 @@ puts `#{File.dirname(__FILE__)}/../gradlew assembleRelease --stacktrace \
 
 
 
-### Stage 4: Pushing to S3
+### *Stage 4*: Pushing to S3
 
 So, now we have build a signed apk from a docker container. It's time to push them.
 Connect with your s3 bucket and generate *$HOME/.s3cfg* file, and pass it to ruby script below:
@@ -219,7 +219,7 @@ end
 `application/vnd.android.package-archive` is the apk file type descriptor.
 
 
-### Stage 5: Finally, Git Tagging The New Release Version, *#hashtag*
+### *Stage 5*: Finally, Git Tagging The New Release Version, *#hashtag*
 
 ```ruby
 def push_new_tag version_name
