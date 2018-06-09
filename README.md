@@ -1,26 +1,16 @@
-# gatsby-starter-default
-The default Gatsby starter.
+# Personal Blog 
 
-For an overview of the project structure please refer to the [Gatsby documentation - Building with Components](https://www.gatsbyjs.org/docs/building-with-components/).
+## Add Post
 
-## Install
+Copy the template from one of the posts[src/pages/posts]
+Add a new post
 
-Make sure that you have the Gatsby CLI program installed:
-```sh
-npm install --global gatsby-cli
-```
 
-And run from your CLI:
-```sh
-gatsby new gatsby-example-site
-```
+## Run locally
 
-Then you can run it by:
-```sh
-cd gatsby-example-site
-npm run develop
-```
+`$ npm run develop`
 
-## Deploy
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/gatsbyjs/gatsby-starter-default)
+## Deploy to github pages
+
+`$ npm run deploy`
