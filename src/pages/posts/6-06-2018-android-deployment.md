@@ -4,7 +4,7 @@ date: "2018-06-06T00:08:33.962Z"
 title: "Android Versioning Using Docker & Git Like A Pro"
 ---
 
-Unlike web deployments, android deployment still lacks the ease of version deployments. Specially when you don't want to use Play Store.
+Unlike web, android still lacks the ease of version deployments. Specially when you don't want to use Play Store.
 
 ![alt text](https://www.genymobile.com/wp-content/uploads/2015/07/Android-Docker.png "Shipping Android Deployment")
 
@@ -129,10 +129,9 @@ RUN yes | sdkmanager \
 RUN apt-get -y install ruby
 RUN gem install trollop
 ```
-Trollop will be helpful in compile scripts, spicing the boring command line args.
+Trollop will be helpful in compiling scripts, spicing the boring command line args.
 
-We are using openjdk as base image for java environment.
-We have installed our sdk with version 27. You can change that accordingly.
+We are using openjdk as base image for java environment and installed our sdk with version 27. You can change that accordingly.
 
 
 #### Building the image:
@@ -170,14 +169,14 @@ fi
 docker exec ${container_name} ruby /${app_name}/scripts/compile.rb -k /${app_name}/config.yaml
 ```
 
-Here we first check if the container already exists. And then create accordingly.
+Here we first check if the container already exists. Then create accordingly.
 While creating the container, we *mount* our current project directory. So next time we run this container, our updated project will already be there in the container.
 
 
 
 ### *Stage 3*: Running container, *Build Stage*
 
-We run the container, with our compile script. Passing the signing config file we created earlier.
+We run the container, with our compile script. Pass the signing config file we created earlier.
 
 ```ruby
 config = YAML.load_file(key_config_file)
